@@ -6,9 +6,11 @@ from anytree import RenderTree,AsciiStyle
 class LumberJack:
   def __init__(self,filePath,fileName=""):
     self.ext = ".log"
+    self.dirName = filePath
     self.fileName = os.path.join(filePath,fileName + self.ext)
     print("Logging data to:\t" + self.fileName)
     self.fid = open(self.fileName, "w")
+
   
   def header(self, content):
     self.fid.write(content)
@@ -24,6 +26,7 @@ class LumberJack:
     matStr = str(matrix).split('\n')
     matStr = self.tabbing(tab+1) + ('\n' + self.tabbing(tab+1)).join(matStr)
     self.fid.write(matStr)
+    self.fid.write('\n')
 
   def array(self, label, array, tab = 1):
     self.fid.write(self.tabbing(tab))

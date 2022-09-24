@@ -7,4 +7,4 @@ Write-Output ""
 python .\DecisionTree\Practice\main.py
 
 Write-Output ""
-Read-Host -Prompt "Press Enter to exit"
+# Read-Host -Prompt "Press Enter to exit"

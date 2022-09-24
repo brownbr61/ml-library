@@ -1,0 +1,12 @@
+| label values
+
+on, off
+
+| attributes
+
+x0:   vhigh, high, med, low.
+x1:    vhigh, high, med, low.
+x2:    2, 3, 4, 5more.
+
+| columns
+x0,x1,x2,label

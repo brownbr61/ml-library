@@ -6,7 +6,6 @@ import pandas as panda
 
 class AliAsses:
   def __init__(self, dir):
-    print(os.path.join(dir,"labels.txt"))
     self.aliasDict = self.getLabels(os.path.join(dir,"labels.txt"))
     self.trainDataMatrix = self.rmLabels(os.path.join(dir,"train.csv"))
     self.trainDataTable = self.relabelData(self.trainDataMatrix)
@@ -23,6 +22,8 @@ class AliAsses:
       for line in f:
         terms = line.strip().split(',')
         # key, value0, value1
+        for i in range(0,len(terms)):
+          terms[i] = terms[i].strip()
         aliasDict[terms[0]] = list(terms[1:])
     return aliasDict
 

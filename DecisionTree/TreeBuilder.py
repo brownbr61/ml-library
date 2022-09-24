@@ -1,15 +1,8 @@
 from copy import deepcopy
-from distutils.command.build import build
 import os
-from tkinter.ttk import LabeledScale
-from turtle import TurtleScreenBase
-from DecisionTree.DecisionTree import DecisionTree
 from anytree import Node, RenderTree, AsciiStyle
 from MiscTools.LumberJack import LumberJack
-from DecisionTree.AliasManager import AliAsses
 import numpy
-
-pop = 'population'
 
 class TreeBuilder:
   def __init__(self, logDir, aliAss, dataMatrix, filename = "node"):
@@ -97,8 +90,6 @@ class TreeBuilder:
       self.Log.header(RenderTree(orphanTrees[-1], style=AsciiStyle()).by_attr())
       self.Log.dictionary("alias dictionary",alias.aliasDict)
     
-    ## Now I need to correct column number!!
-    
     self.Log.header("Giving orphan trees a home!")
     root = Node(maxI, children=orphanTrees)
     self.Log.header(RenderTree(root, style=AsciiStyle()).by_attr())
@@ -106,32 +97,34 @@ class TreeBuilder:
     self.Log.header("Re-Addressing Columns!")
     root = self.squirrel(root, maxI)
     self.Log.header(RenderTree(root, style=AsciiStyle()).by_attr())
-    
-    self.Log.matrix("printing data matrix", self.data)
 
-
+    self.Log.header("Closing build()")
+    print("Done logging data to:\t {}".format(self.dir))
     return root
 
 
 
   def createLeaf(self):
+    self.Log.header("Creating Leaf Node:")
+    root = Node(-1)
+
     if self.allLabelsEqual():
       self.Log.header("All Labels are identical:")
       self.Log.matrix("labels",self.labelData)
-      return Node(self.labelData[0])
+      root = Node(self.labelData[0])
 
     elif self.data.shape[0] == 0: # there are no rows of data left
       self.Log.header("No data remaining; oops!:")
       self.Log.matrix("labels",self.labelData)
-      return Node(0)
+      root = Node(0)
 
     elif self.data.shape[0] == 1: # there's only one row of data left
       self.Log.header("Only row of data Remaining:")
       self.Log.matrix("labels",self.labelData)
-      return Node(self.labelData[0])
+      root = Node(self.labelData[0])
 
-    elif self.data.shape[1] == 2: # there's only one column of attributes remaining
-      self.Log.header("Only one column remaining:")
+    elif self.data.shape[1] == 2:
+      self.Log.header("Only one column of attributes remaining:")
       self.Log.matrix("labels", self.labelData)
       # get the probability matrix and use it to assign values to child nodes
       p = self.P(self.alias.keys()[0],self.alias.keys()[-1])
@@ -139,8 +132,12 @@ class TreeBuilder:
       for i in range(0, len(self.alias.aliasDict[self.alias.keys()[0]])):
         # assign max probability label assignment as child node value
         nodes.append(Node(numpy.argmax(p[i,:])))
-      return Node(0,children=nodes)
-    return
+      root = Node(0,children=nodes)
+
+    self.Log.tree("Returning Leaf node:",root)
+    self.Log.header("Closing out of createLeaf()")
+    print("Done logging data to:\t {}".format(self.dir))
+    return root
 
 
 
@@ -194,9 +191,11 @@ class TreeBuilder:
     p = numpy.zeros([xLabelCt,yLabelCt])
     for x in range(0,xLabelCt):
       for y in range(0,yLabelCt):
-        xMat = (self.data[:,xCol] == x) * 1
-        yMat = (self.data[:,yCol] == y) * 1
-        p[x,y] = xMat.dot(yMat)/sum(xMat)
+        xMat  = (self.data[:,xCol] == x) * 1
+        yMat  = (self.data[:,yCol] == y) * 1
+        sxMat = sum(xMat) 
+        sxMat = sxMat + (sxMat + .00001)
+        p[x,y] = xMat.dot(yMat)/sxMat
     return p
     
 

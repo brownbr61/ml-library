@@ -22,77 +22,69 @@ labelFile = "labels.txt"
 dataDirectory = "./DecisionTree/Practice/data/"
 logDirectory = "./DecisionTree/Practice/logs/"
 
+def cleanDir(dirName):
+  try:
+    shutil.rmtree(dirName)
+    if os.path.isdir(dirName) == False:
+      os.mkdir(dirName)
+  except:
+    print('Error deleting:  {}'.format(dirName))
+  if os.path.isdir(dirName) == False:
+    os.mkdir(dirName)
+
+
+
+def myTreeBuilder(treeName):  
+  myDataDir = os.path.join(dataDirectory, treeName)
+  myLogDir = os.path.join(logDirectory, treeName)
+  cleanDir(myLogDir)
+  Log = LumberJack(myLogDir,"main")
+  Log.header("This function will build: {}()!".format(treeName))
+
+  Log.comment("Extracting labels from: {}".format(myDataDir + labelFile))
+  aliAss = AliAsses(myDataDir)
+  aliasDict = aliAss.aliasDict
+  Log.dictionary("aliasDict",aliasDict)
+
+  Log.comment("Using aliasDict to extract labels from {}".format(myDataDir + trainingFile))
+  dataMatrix = aliAss.trainDataMatrix
+  Log.matrix("dataMatrix",dataMatrix)
+
+  Log.comment("Using aliasDict to return to labels from dataMatrix")
+  dataTable = aliAss.trainDataTable
+  Log.matrix("dataTable",dataTable)
+
+  Log.comment("Building Tree:")
+  builder = TreeBuilder(Log.dirName, aliAss, dataMatrix, "root")
+  Log.matrix("Training Data:",dataMatrix)
+  decisionTree = builder.build()
+  print("\nTraining Data: ")
+  print(dataMatrix)
+  
+  treeHeader = "Decision Tree for {}".format(treeName)
+  Log.tree(treeHeader, decisionTree)
+  print(treeHeader)
+  print(RenderTree(decisionTree, style=AsciiStyle()).by_attr())
+
+
+
 # create binary decision tree
 def binaryTreeBuilder():
-  treeName = "binary"
-  dataDirName = os.path.join(dataDirectory, treeName)
-  logDirName = os.path.join(logDirectory, treeName)
-  try:
-    shutil.rmtree(logDirName)
-    if os.path.isdir(logDirName) == False:
-      os.mkdir(logDirName)
-  except:
-    print('Error deleting:  {}'.format(logDirName))
-  logFileName = "main"
-  Log = LumberJack(logDirName,logFileName)
-  Log.header("Welcome to binaryTreeBuilder()!")
-
-  Log.comment("Extracting labels from: {}".format(dataDirName + labelFile))
-  aliAss = AliAsses(dataDirName)
-  binDict = aliAss.aliasDict
-  Log.dictionary("binDict",binDict)
-
-  Log.comment("Using binDict to extract labels from {}".format(dataDirName + trainingFile))
-  dataMatrix = aliAss.trainDataMatrix
-  Log.matrix("dataMatrix",dataMatrix)
-
-  Log.comment("Using binDict to return to labels from dataMatrix")
-  dataTable = aliAss.trainDataTable
-  Log.matrix("dataTable",dataTable)
-
-  Log.comment("Building Tree:")
-  builder = TreeBuilder(logDirName, aliAss, dataMatrix, "root")
-  binaryDecisionTree = builder.build()
-  Log.tree("Binary Tree:", binaryDecisionTree)
-
-  print("Binary Decision Tree for {}".format(dataDirName + "train.csv"))
-  print(RenderTree(binaryDecisionTree, style=AsciiStyle()).by_attr())
+  myTreeBuilder("binary")
 
 
 
+# create binary decision tree for 1a
 def hw1_1a():
-  treeName = "1a"
-  dataDirName = os.path.join(dataDirectory, treeName)
-  logDirName = os.path.join(logDirectory, treeName)
-  try:
-    shutil.rmtree(logDirName)
-  except:
-    print('Error deleting:  {}'.format(logDirName))
-  if os.path.isdir(logDirName) == False:
-    os.mkdir(logDirName)
-  logFileName = "main"
-  Log = LumberJack(logDirName,logFileName)
-  Log.header("Welcome to binaryTreeBuilder()!")
+  myTreeBuilder("1a")
 
-  Log.comment("Extracting labels from: {}".format(dataDirName + labelFile))
-  aliAss = AliAsses(dataDirName)
-  binDict = aliAss.aliasDict
-  Log.dictionary("binDict",binDict)
 
-  Log.comment("Using binDict to extract labels from {}".format(dataDirName + trainingFile))
-  dataMatrix = aliAss.trainDataMatrix
-  Log.matrix("dataMatrix",dataMatrix)
-
-  Log.comment("Using binDict to return to labels from dataMatrix")
-  dataTable = aliAss.trainDataTable
-  Log.matrix("dataTable",dataTable)
-
-  Log.comment("Building Tree:")
-  builder = TreeBuilder(logDirName, aliAss, dataMatrix, "root")
-  binaryDecisionTree = builder.build()
-  Log.tree("Binary Tree:", binaryDecisionTree)
+# create decision tree for 1a
+def tennis():
+  myTreeBuilder("tennis")
 
 
 
 binaryTreeBuilder()
-# hw1_1a()
+hw1_1a()
+#tennis()
