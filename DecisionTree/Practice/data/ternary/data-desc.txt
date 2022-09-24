@@ -1,0 +1,13 @@
+| label values
+
+To Play, Not to Play
+
+| attributes
+
+Outlook:      Sunny, Overcast, Rainy
+Temperature:  Hot, Mild, Cool
+Humidity:     High, Normal, Low
+Wind:         Strong, Weak
+
+| columns
+Outlook,Temperature,Humidity,Wind,label

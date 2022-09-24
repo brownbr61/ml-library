@@ -1,0 +1,24 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: main.py",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "cwd": "${fileDirname}",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "PowerShell: Launch Current File",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "c:\\Users\\brown\\OneDrive - University of Utah\\semesters\\2022\\fall\\cs.6350-ml\\ml-library\\run.ps1",
+      "cwd": "c:\\Users\\brown\\OneDrive - University of Utah\\semesters\\2022\\fall\\cs.6350-ml\\ml-library"
+    }
+  ]
+}
