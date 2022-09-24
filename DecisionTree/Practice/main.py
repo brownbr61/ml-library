@@ -87,4 +87,4 @@ def tennis():
 
 binaryTreeBuilder()
 hw1_1a()
-#tennis()
+tennis()

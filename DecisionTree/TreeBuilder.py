@@ -18,7 +18,10 @@ class TreeBuilder:
     self.alias = aliAss
     self.Log.dictionary("We've got the following dictionary", self.alias.aliasDict)
 
-    self.labelData = self.data[:,-1]
+    if self.data.size > 0:
+      self.labelData = self.data[:,-1]
+    else:
+      self.labelData = 0
     self.isLeaf = self.isLeafNode()
 
 
@@ -57,6 +60,8 @@ class TreeBuilder:
 
     self.Log.header("Split Data sets by column of max(iGain):")
     key2sort = self.alias.keys()[maxI]
+    self.Log.comment("label of max(iGain) :  {0}->{1}".format(key2sort, \
+      self.alias.aliasDict[key2sort]))
     self.Log.comment("label of max(iGain) :  {}".format(key2sort))
     self.Log.comment("dict keys: {}".format(self.alias.keys()))
     splitDataSets = dict()
@@ -65,22 +70,21 @@ class TreeBuilder:
     self.Log.dictionary("split data sets:",splitDataSets)
     self.Log.comment("Now we eliminate column of iGain")
     for key in splitDataSets:
-      splitDataSets[key] = numpy.delete(splitDataSets[key],maxI,1)
+      if splitDataSets[key].size > 0:
+        splitDataSets[key] = numpy.delete(splitDataSets[key],maxI,1)
     alias = deepcopy(self.alias)
     del alias.aliasDict[key2sort]
     self.Log.dictionary("alias dictionary",alias.aliasDict)
     self.Log.dictionary("split data sets:",splitDataSets)
 
-    self.Log.header("Create & Call a TreeBuilder for each new data set")
+    self.Log.header("Create & Call a TreeBuilder for each new data set. Then build trees")
     treeBuilders = []
+    orphanTrees = []
     for dataSet in splitDataSets:
       self.Log.comment("Create new dir for new nodes:")
       newDir = os.path.join(self.dir,"{}.{}".format(key2sort,str(dataSet)))
-      treeBuilders.append(TreeBuilder(newDir,alias,splitDataSets[dataSet]))
-    
-    self.Log.header("Build Trees! Here comes Hell!")
-    orphanTrees = []
-    for builder in treeBuilders:
+      builder = TreeBuilder(newDir,alias,splitDataSets[dataSet])
+      treeBuilders.append(builder)
       if builder.isLeaf:
         self.Log.comment("Found a leaf!")
         orphanTrees.append(builder.createLeaf())
@@ -89,6 +93,10 @@ class TreeBuilder:
         orphanTrees.append(builder.build())
       self.Log.header(RenderTree(orphanTrees[-1], style=AsciiStyle()).by_attr())
       self.Log.dictionary("alias dictionary",alias.aliasDict)
+      
+    
+    # self.Log.header("Build Trees! Here comes Hell!")
+    # for builder in treeBuilders:
     
     self.Log.header("Giving orphan trees a home!")
     root = Node(maxI, children=orphanTrees)
@@ -108,6 +116,9 @@ class TreeBuilder:
     self.Log.header("Creating Leaf Node:")
     root = Node(-1)
 
+    if self.data.size == 0:
+      self.Log.header("NO Data here:")
+
     if self.allLabelsEqual():
       self.Log.header("All Labels are identical:")
       self.Log.matrix("labels",self.labelData)
@@ -125,13 +136,17 @@ class TreeBuilder:
 
     elif self.data.shape[1] == 2:
       self.Log.header("Only one column of attributes remaining:")
-      self.Log.matrix("labels", self.labelData)
+      self.Log.dictionary("aliases", self.alias.aliasDict)
+      self.Log.matrix("data", self.data)
       # get the probability matrix and use it to assign values to child nodes
       p = self.P(self.alias.keys()[0],self.alias.keys()[-1])
       nodes = []
       for i in range(0, len(self.alias.aliasDict[self.alias.keys()[0]])):
         # assign max probability label assignment as child node value
-        nodes.append(Node(numpy.argmax(p[i,:])))
+        if i < p.shape[0]:
+          nodes.append(Node(numpy.argmax(p[i,:])))
+        else:
+          nodes.append(Node(numpy.argmax(numpy.sum(p, axis=0))))
       root = Node(0,children=nodes)
 
     self.Log.tree("Returning Leaf node:",root)
@@ -151,16 +166,15 @@ class TreeBuilder:
 
 
   def H(self, p):
-    self.Log.matrix("make sure p != 0 for log(p)", p)
+    # self.Log.matrix("make sure p != 0 for log(p)", p)
     p = (p == 0)*1 + p
-    self.Log.matrix("make sure p != 0 for log(p)", p)
+    # self.Log.matrix("make sure p != 0 for log(p)", p)
     return -1*numpy.sum(numpy.multiply(p,numpy.log(p)),1)
 
 
   
   def I(self, p, h):
-    # I feel like '/len(h)' is a bad idea, but it gives the right answer... *!*
-    return sum(numpy.matmul(h.transpose(),p))/len(h) 
+    return sum(numpy.matmul(h.transpose(),p))
 
   # calculates P(Y|X)
   def P(self, Y, X) -> numpy.array:
@@ -202,6 +216,7 @@ class TreeBuilder:
 
   def isLeafNode(self):
     return( 
+            self.data.size == 0 or \
             self.data.shape[0] <= 1 or \
             self.data.shape[1] == 2 or \
             self.allLabelsEqual()
