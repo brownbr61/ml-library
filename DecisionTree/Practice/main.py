@@ -72,19 +72,21 @@ def myTreeBuilder(treeName):
 def binaryTreeBuilder():
   myTreeBuilder("binary")
 
-
-
 # create binary decision tree for 1a
 def hw1_1a():
   myTreeBuilder("1a")
 
-
 # create decision tree for 1a
 def tennis():
   myTreeBuilder("tennis")
+
+# create decision tree for car
+def car():
+  myTreeBuilder("car")
 
 
 
 binaryTreeBuilder()
 hw1_1a()
 tennis()
+# car()

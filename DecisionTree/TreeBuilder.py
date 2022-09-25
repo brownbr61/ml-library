@@ -82,28 +82,21 @@ class TreeBuilder:
     orphanTrees = []
     for dataSet in splitDataSets:
       self.Log.comment("Create new dir for new nodes:")
-      newDir = os.path.join(self.dir,"{}.{}".format(key2sort,str(dataSet)))
+      newDir = os.path.join(self.dir,"{}.{}".format(key2sort,str(self.alias.aliasDict[key2sort][dataSet])))
       builder = TreeBuilder(newDir,alias,splitDataSets[dataSet])
       treeBuilders.append(builder)
       if builder.isLeaf:
         self.Log.comment("Found a leaf!")
-        orphanTrees.append(builder.createLeaf())
+        node = builder.createLeaf()
       else:
         self.Log.comment("calling builder.build()")
-        orphanTrees.append(builder.build())
+        node = builder.build()
+      orphanTrees.append(Node(self.alias.aliasDict[key2sort][dataSet], children=[node]))
       self.Log.header(RenderTree(orphanTrees[-1], style=AsciiStyle()).by_attr())
       self.Log.dictionary("alias dictionary",alias.aliasDict)
-      
-    
-    # self.Log.header("Build Trees! Here comes Hell!")
-    # for builder in treeBuilders:
     
     self.Log.header("Giving orphan trees a home!")
-    root = Node(maxI, children=orphanTrees)
-    self.Log.header(RenderTree(root, style=AsciiStyle()).by_attr())
-    
-    self.Log.header("Re-Addressing Columns!")
-    root = self.squirrel(root, maxI)
+    root = Node(key2sort, children=orphanTrees)
     self.Log.header(RenderTree(root, style=AsciiStyle()).by_attr())
 
     self.Log.header("Closing build()")
@@ -115,6 +108,9 @@ class TreeBuilder:
   def createLeaf(self):
     self.Log.header("Creating Leaf Node:")
     root = Node(-1)
+    attributes = self.alias.aliasDict[self.alias.keys()[0]]
+    labelist = self.alias.aliasDict[self.alias.keys()[-1]]
+    self.Log.matrix("labelist",labelist)
 
     if self.data.size == 0:
       self.Log.header("NO Data here:")
@@ -122,17 +118,19 @@ class TreeBuilder:
     if self.allLabelsEqual():
       self.Log.header("All Labels are identical:")
       self.Log.matrix("labels",self.labelData)
-      root = Node(self.labelData[0])
+      leafVal = Node(labelist[self.labelData[0]])
+      root = Node(self.alias.keys()[-1], children=[leafVal])
 
     elif self.data.shape[0] == 0: # there are no rows of data left
       self.Log.header("No data remaining; oops!:")
       self.Log.matrix("labels",self.labelData)
-      root = Node(0)
+      root = Node(self.alias.keys()[-1], children=[Node(labelist[0])])
 
     elif self.data.shape[0] == 1: # there's only one row of data left
       self.Log.header("Only row of data Remaining:")
       self.Log.matrix("labels",self.labelData)
-      root = Node(self.labelData[0])
+      root = Node(labelist[self.labelData[0]])
+      root = Node(self.alias.keys()[-1], children=[leafVal])
 
     elif self.data.shape[1] == 2:
       self.Log.header("Only one column of attributes remaining:")
@@ -144,10 +142,12 @@ class TreeBuilder:
       for i in range(0, len(self.alias.aliasDict[self.alias.keys()[0]])):
         # assign max probability label assignment as child node value
         if i < p.shape[0]:
-          nodes.append(Node(numpy.argmax(p[i,:])))
+          leafVal = Node(labelist[numpy.argmax(p[i,:])])
         else:
-          nodes.append(Node(numpy.argmax(numpy.sum(p, axis=0))))
-      root = Node(0,children=nodes)
+          leafVal = Node(labelist[numpy.argmax(numpy.sum(p, axis=0))])
+        labelNode = Node(self.alias.keys()[-1], children=[leafVal])
+        nodes.append(Node(attributes[i], children=[labelNode]))
+      root = Node(self.alias.keys()[0],children=nodes)
 
     self.Log.tree("Returning Leaf node:",root)
     self.Log.header("Closing out of createLeaf()")
@@ -166,9 +166,7 @@ class TreeBuilder:
 
 
   def H(self, p):
-    # self.Log.matrix("make sure p != 0 for log(p)", p)
     p = (p == 0)*1 + p
-    # self.Log.matrix("make sure p != 0 for log(p)", p)
     return -1*numpy.sum(numpy.multiply(p,numpy.log(p)),1)
 
 
@@ -225,7 +223,6 @@ class TreeBuilder:
 
 
   def allLabelsEqual(self):
-    equal = True
     value = self.labelData[0]
     for val in self.labelData:
       if (val == value) == False:
