@@ -81,6 +81,10 @@ def tennis():
   myTreeBuilder("tennis")
 
 # create decision tree for car
+def ternary():
+  myTreeBuilder("ternary")
+
+# create decision tree for car
 def car():
   myTreeBuilder("car")
 
@@ -89,4 +93,5 @@ def car():
 binaryTreeBuilder()
 hw1_1a()
 tennis()
+ternary()
 # car()

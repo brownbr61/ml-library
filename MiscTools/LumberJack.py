@@ -58,3 +58,4 @@ class LumberJack:
   def tree(self, label, root):
     self.fid.write(label + " :\n")
     self.fid.write(RenderTree(root, style=AsciiStyle()).by_attr())
+    self.fid.write("\n")

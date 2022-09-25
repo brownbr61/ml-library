@@ -1,13 +1,12 @@
 | label values
 
-To Play, Not to Play
+on, off
 
 | attributes
 
-Outlook:      Sunny, Overcast, Rainy
-Temperature:  Hot, Mild, Cool
-Humidity:     High, Normal, Low
-Wind:         Strong, Weak
+x0:   vhigh, high, med, low.
+x1:    vhigh, high, med, low.
+x2:    2, 3, 4, 5more.
 
 | columns
-Outlook,Temperature,Humidity,Wind,label
+x0,x1,x2,label

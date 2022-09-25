@@ -138,19 +138,23 @@ class TreeBuilder:
       self.Log.matrix("data", self.data)
       # get the probability matrix and use it to assign values to child nodes
       p = self.P(self.alias.keys()[0],self.alias.keys()[-1])
+      self.Log.matrix("p",p)
       nodes = []
       for i in range(0, len(self.alias.aliasDict[self.alias.keys()[0]])):
         # assign max probability label assignment as child node value
         if i < p.shape[0]:
-          leafVal = Node(labelist[numpy.argmax(p[i,:])])
+          assignedIndex = numpy.argmax(p[:,i])
+          self.Log.comment("assignedIndex = {}".format(assignedIndex))
+          leafVal = Node(labelist[assignedIndex])
         else:
-          leafVal = Node(labelist[numpy.argmax(numpy.sum(p, axis=0))])
+          sump = numpy.sum(p, axis=0)
+          leafVal = Node(labelist[numpy.argmax(sump)])
         labelNode = Node(self.alias.keys()[-1], children=[leafVal])
         nodes.append(Node(attributes[i], children=[labelNode]))
       root = Node(self.alias.keys()[0],children=nodes)
 
     self.Log.tree("Returning Leaf node:",root)
-    self.Log.header("Closing out of createLeaf()")
+    self.Log.header("Closing createLeaf()")
     print("Done logging data to:\t {}".format(self.dir))
     return root
 
@@ -228,12 +232,3 @@ class TreeBuilder:
       if (val == value) == False:
         return False
     return True
-
-
-
-  def squirrel(self, node, column):
-    for child in node.children:
-      if child.children:
-        child.name = child.name + (child.name >= column)
-        child = self.squirrel(child, column)
-    return node

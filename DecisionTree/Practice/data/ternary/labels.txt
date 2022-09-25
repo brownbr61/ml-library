@@ -1,0 +1,5 @@
+outlook,sunny,overcast,rain
+temperature,hot,mild,cool
+humidity,high,normal
+wind,weak,strong
+label,yes,no,maybe
